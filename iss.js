@@ -21,8 +21,20 @@ const request = require('request');
   });
 }
 
-const fetchCoordsByIP
+const fetchCoordsByIP = function(ip, callback) {
+  request(("http://ipwho.is/" + ip), (error, response, body) => {
+    if (error) return callback(error, null);
+    if (response.statusCode !== 200) {
+      const msg = `Status code ${response.statusCode} when fetching IP. Response: ${body}`;
+      callback(Error(msg), null);
+      return;
+    }
+    if (!JSON.parse(body).success) return callback("Couldn't get IP!", null);
+    const { latitude, longitude } = JSON.parse(body)
+    callback(null, { latitude, longitude });
+  });
+}
 
 // http://ipwho.is/[IP address]
 
-module.exports = { fetchMyIP };
+module.exports = { fetchMyIP, fetchCoordsByIP };
