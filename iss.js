@@ -45,11 +45,23 @@ const fetchISSFlyOverTimes = function(coords, callback) {
       callback(Error(msg), null);
       return;
     }
-    // if (!JSON.parse(body).success) return callback("ISS database doesn't like it!", null);
     const parsedBody = JSON.parse(body);
+    if (parsedBody.message !== "success") return callback("ISS database doesn't like it!", null);
     callback(null, parsedBody.response);
   });
 }
 
 
-module.exports = { fetchMyIP, fetchCoordsByIP, fetchISSFlyOverTimes };
+const nextISSTimesForMyLocation = function(callback) {
+  fetchMyIP((error, ip) => {
+    if (error) return callback(error, null);
+    fetchCoordsByIP((ip), (error, location) => {
+      if (error) return callback(error, null);
+      fetchISSFlyOverTimes(location, (error, times) => {
+        if (error) return callback(error, null);
+        callback(error, times);
+      })
+    })
+  })
+}
+module.exports = { fetchMyIP, fetchCoordsByIP, fetchISSFlyOverTimes, nextISSTimesForMyLocation };
